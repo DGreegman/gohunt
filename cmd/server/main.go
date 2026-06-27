@@ -1,12 +1,35 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os"
 
+	"github.com/DGreegman/gohunt/internal/database"
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	if err := godotenv.Load(); err != nil {
+		log.Println("no .env file found, relying on environment")
+	}
+
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
+
+	ctx := context.Background()
+	pool, err := database.Connect(ctx, databaseURL)
+
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer pool.Close()
+
+	log.Println("Connected to Database")
 	app := fiber.New(fiber.Config{
 		AppName: "GoHunt v1.1",
 	})

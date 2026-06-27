@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS blacklist;
+DROP TABLE IF EXISTS source_logs;
+DROP TABLE IF EXISTS user_profile;
+DROP TABLE IF EXISTS drafts;
+DROP TABLE IF EXISTS job_scores;
+DROP TABLE IF EXISTS applications;
+DROP TABLE IF EXISTS jobs;
