@@ -1,0 +1,11 @@
+# binaries
+/bin/
+gohunt
+*.exe
+
+# env / secrets
+.env
+
+# editor
+.vscode/
+.idea/
