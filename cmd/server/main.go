@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/DGreegman/gohunt/internal/database"
+	"github.com/DGreegman/gohunt/internal/fetcher"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 )
@@ -30,6 +31,22 @@ func main() {
 	defer pool.Close()
 
 	log.Println("Connected to Database")
+
+	src := fetcher.NewRemotiveSource()
+	store := fetcher.NewStore(pool)
+
+	jobs, err := src.FetchJobs(ctx)
+	if err != nil {
+		log.Fatalf("Fetch Failed: %v", err)
+	}
+
+	inserted, err := store.SaveJobs(ctx, jobs)
+
+	if err != nil {
+		log.Fatalf("Saved failed: %v", err)
+	}
+
+	log.Printf("Fetched %d jobs, inserted %d new (from %s)", len(jobs), inserted, src.Name())
 	app := fiber.New(fiber.Config{
 		AppName: "GoHunt v1.1",
 	})
