@@ -34,6 +34,16 @@ func NewHandler(pool *pgxpool.Pool) *Handler {
 }
 
 // ListJobs handles GET /api/jobs?limit=&offset=
+// ListJobs godoc
+// @Summary      List jobs
+// @Description  Returns a paginated list of aggregated jobs
+// @Tags         jobs
+// @Produce      json
+// @Param        limit   query     int  false  "Max results (default 20)"
+// @Param        offset  query     int  false  "Rows to skip (default 0)"
+// @Success      200     {object}  map[string]interface{}
+// @Failure      500     {object}  map[string]interface{}
+// @Router       /api/jobs [get]
 func (h *Handler) ListJobs(c *fiber.Ctx) error {
 	limit := parseIntDefault(c.Query("limit"), 20)
 	offset := parseIntDefault(c.Query("offset"), 0)

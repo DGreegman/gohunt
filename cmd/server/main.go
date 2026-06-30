@@ -9,8 +9,15 @@ import (
 	"github.com/DGreegman/gohunt/internal/database"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	_ "github.com/DGreegman/gohunt/docs"
+	fiberSwagger "github.com/swaggo/fiber-swagger"
 )
 
+// @title           GoHunt API
+// @version         1.1
+// @description     AI-powered job aggregation and application assistant.
+// @host            localhost:8080
+// @BasePath        /
 func main() {
 
 	if err := godotenv.Load(); err != nil {
@@ -61,5 +68,6 @@ func main() {
 		})
 	})
 	app.Get("/api/jobs", handler.ListJobs)
+	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 	log.Fatal(app.Listen(":8080"))
 }

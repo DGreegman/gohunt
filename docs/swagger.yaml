@@ -1,0 +1,37 @@
+basePath: /
+host: localhost:8080
+info:
+  contact: {}
+  description: AI-powered job aggregation and application assistant.
+  title: GoHunt API
+  version: "1.1"
+paths:
+  /api/jobs:
+    get:
+      description: Returns a paginated list of aggregated jobs
+      parameters:
+      - description: Max results (default 20)
+        in: query
+        name: limit
+        type: integer
+      - description: Rows to skip (default 0)
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List jobs
+      tags:
+      - jobs
+swagger: "2.0"
