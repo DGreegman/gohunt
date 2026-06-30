@@ -64,3 +64,59 @@ func (q *Queries) CreateJob(ctx context.Context, arg CreateJobParams) (int64, er
 	err := row.Scan(&id)
 	return id, err
 }
+
+const listJobs = `-- name: ListJobs :many
+SELECT id, title, company, source, url, location, remote, posted_at, link_status, created_at
+FROM jobs
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type ListJobsParams struct {
+	Limit  int32
+	Offset int32
+}
+
+type ListJobsRow struct {
+	ID         int64
+	Title      string
+	Company    string
+	Source     string
+	Url        string
+	Location   string
+	Remote     bool
+	PostedAt   pgtype.Timestamptz
+	LinkStatus string
+	CreatedAt  pgtype.Timestamptz
+}
+
+func (q *Queries) ListJobs(ctx context.Context, arg ListJobsParams) ([]ListJobsRow, error) {
+	rows, err := q.db.Query(ctx, listJobs, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListJobsRow
+	for rows.Next() {
+		var i ListJobsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Company,
+			&i.Source,
+			&i.Url,
+			&i.Location,
+			&i.Remote,
+			&i.PostedAt,
+			&i.LinkStatus,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

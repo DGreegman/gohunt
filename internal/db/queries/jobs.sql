@@ -9,3 +9,10 @@ RETURNING id;
 
 -- name: CountJobs :one
 SELECT count(*) FROM jobs; 
+
+
+-- name: ListJobs :many
+SELECT id, title, company, source, url, location, remote, posted_at, link_status, created_at
+FROM jobs
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
