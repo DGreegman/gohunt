@@ -9,6 +9,34 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
+        "/api/fetch/trigger": {
+            "post": {
+                "description": "Fetches jobs from the configured source and stores new ones",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "fetch"
+                ],
+                "summary": "Trigger a job fetch",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/api/jobs": {
             "get": {
                 "description": "Returns a paginated list of aggregated jobs",

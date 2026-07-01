@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/DGreegman/gohunt/internal/db"
+	"github.com/DGreegman/gohunt/internal/fetcher"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -26,11 +27,17 @@ type JobResponse struct {
 // Handler holds dependencies shared across HTTP handlers.
 type Handler struct {
 	queries *db.Queries
+	source fetcher.JobSource
+	store  *fetcher.Store
 }
 
 // NewHandler wires handlers to the connection pool.
-func NewHandler(pool *pgxpool.Pool) *Handler {
-	return &Handler{queries: db.New(pool)}
+func NewHandler(pool *pgxpool.Pool, source fetcher.JobSource, store *fetcher.Store) *Handler {
+	return &Handler{
+		queries: db.New(pool),
+		source: source,
+		store: store,
+	}
 }
 
 // ListJobs handles GET /api/jobs?limit=&offset=
@@ -66,6 +73,38 @@ func (h *Handler) ListJobs(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"count": len(resp),
 		"jobs":  resp,
+	})
+}
+
+// TriggerFetch godoc
+// @Summary      Trigger a job fetch
+// @Description  Fetches jobs from the configured source and stores new ones
+// @Tags         fetch
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      500  {object}  map[string]interface{}
+// @Router       /api/fetch/trigger [post]
+func (h *Handler) TriggerFetch(c *fiber.Ctx) error {
+	jobs, err := h.source.FetchJobs(c.Context())
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Fetch Failed...",
+		})
+	}
+
+	inserted, err := h.store.SaveJobs(c.Context(), jobs)
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error" : "Failed to Save Jobs",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"source": h.source.Name(),
+		"fetched": len(jobs),
+		"inserted": inserted,
 	})
 }
 

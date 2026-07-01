@@ -6,6 +6,25 @@ info:
   title: GoHunt API
   version: "1.1"
 paths:
+  /api/fetch/trigger:
+    post:
+      description: Fetches jobs from the configured source and stores new ones
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Trigger a job fetch
+      tags:
+      - fetch
   /api/jobs:
     get:
       description: Returns a paginated list of aggregated jobs
