@@ -40,7 +40,13 @@ func main() {
 
 	log.Println("Connected to Database")
 
-	source := fetcher.NewRemotiveSource()
+	sources := []fetcher.JobSource{
+		fetcher.NewRemotiveSource(),
+		fetcher.NewGreenhouseSource("gitlab"),
+	}
+
+	source := fetcher.NewPool(sources, 5)
+	
 	store := fetcher.NewStore(pool)
 	handler := api.NewHandler(pool, source, store)
 
