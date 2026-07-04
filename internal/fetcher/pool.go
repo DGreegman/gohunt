@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"sync"
+	"time"
 )
 
 // Pool runs multiple JobSources concurrently with a bounded number of workers
@@ -26,6 +27,11 @@ func (p *Pool) Name() string {
 }
 // FetchJobs urns every source concurrently and returns all jobs combined.
 func (p *Pool) FetchJobs(ctx context.Context) ([]Job, error) {
+	// Give the whole fetch a hard deadline. if it isn't done in time,
+	// the context cancels and every source's HTTP call aborts
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Millisecond)
+	defer cancel()
+
 	work := make(chan JobSource) //queue: sources going IN to workers
 	results := make(chan Job) //belt: jobs coming OUT of workers
 
@@ -36,7 +42,7 @@ func (p *Pool) FetchJobs(ctx context.Context) ([]Job, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for source := range work {
+			for source := range work { // pull a source, fetch, repeat
 				jobs, err := source.FetchJobs(ctx)
 				if err != nil {
 					log.Printf("Source %s failed: %v", source.Name(), err)
