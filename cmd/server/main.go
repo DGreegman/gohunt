@@ -62,6 +62,8 @@ func main() {
 	})
 	app.Get("/api/jobs", handler.ListJobs)
 	app.Post("/api/fetch/trigger", handler.TriggerFetch)
+	app.Get("/api/profile", handler.GetProfile)
+	app.Put("/api/profile", handler.UpsertProfile)
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 	log.Fatal(app.Listen(":8080"))
 }

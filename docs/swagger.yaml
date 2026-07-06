@@ -1,4 +1,67 @@
 basePath: /
+definitions:
+  github_com_DGreegman_gohunt_internal_api.ProfileRequest:
+    properties:
+      current_role_title:
+        type: string
+      experience_years:
+        type: integer
+      location_pref:
+        type: string
+      name:
+        type: string
+      preferred_stack:
+        items:
+          type: string
+        type: array
+      remote_only:
+        type: boolean
+      salary_max:
+        type: integer
+      salary_min:
+        type: integer
+      skills:
+        items:
+          type: string
+        type: array
+      target_roles:
+        items:
+          type: string
+        type: array
+      timezone:
+        type: string
+    type: object
+  internal_api.ProfileRequest:
+    properties:
+      current_role_title:
+        type: string
+      experience_years:
+        type: integer
+      location_pref:
+        type: string
+      name:
+        type: string
+      preferred_stack:
+        items:
+          type: string
+        type: array
+      remote_only:
+        type: boolean
+      salary_max:
+        type: integer
+      salary_min:
+        type: integer
+      skills:
+        items:
+          type: string
+        type: array
+      target_roles:
+        items:
+          type: string
+        type: array
+      timezone:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -53,4 +116,48 @@ paths:
       summary: List jobs
       tags:
       - jobs
+  /api/profile:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user profile
+      tags:
+      - profile
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Profile data
+        in: body
+        name: profile
+        required: true
+        schema:
+          $ref: '#/definitions/internal_api.ProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create or update user profile
+      tags:
+      - profile
 swagger: "2.0"

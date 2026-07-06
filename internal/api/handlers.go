@@ -7,6 +7,7 @@ import (
 	"github.com/DGreegman/gohunt/internal/db"
 	"github.com/DGreegman/gohunt/internal/fetcher"
 	"github.com/gofiber/fiber/v2"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -139,3 +140,78 @@ func parseIntDefault(s string, fallback int) int {
 
 	return n
 } 
+
+
+// ProfileRequest is the shape a client sends to create/update the profile
+type ProfileRequest struct {
+	Name             string   `json:"name"`
+	CurrentRoleTitle string   `json:"current_role_title"`
+	Skills           []string `json:"skills"`
+	ExperienceYears  int32    `json:"experience_years"`
+	TargetRoles      []string `json:"target_roles"`
+	PreferredStack   []string `json:"preferred_stack"`
+	SalaryMin        int32    `json:"salary_min"`
+	SalaryMax        int32    `json:"salary_max"`
+	LocationPref     string   `json:"location_pref"`
+	RemoteOnly       bool     `json:"remote_only"`
+	Timezone         string   `json:"timezone"`
+}
+
+// GetProfile godoc
+// @Summary      Get user profile
+// @Tags         profile
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      404  {object}  map[string]interface{}
+// @Router       /api/profile [get]
+func (h *Handler) GetProfile(c *fiber.Ctx) error {
+	profile, err := h.queries.GetProfile(c.Context())
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error" : "no profile found - create one with PUT /api/profile",
+		})
+	}
+	return c.JSON(profile)
+}
+
+
+
+// UpsertProfile godoc
+// @Summary      Create or update user profile
+// @Tags         profile
+// @Accept       json
+// @Produce      json
+// @Param        profile  body      ProfileRequest  true  "Profile data"
+// @Success      200      {object}  map[string]interface{}
+// @Failure      400      {object}  map[string]interface{}
+// @Router       /api/profile [put]
+func (h *Handler) UpsertProfile(c *fiber.Ctx) error {
+	var req ProfileRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error" : "invalid request body",
+		})
+	}
+
+	profile, err := h.queries.UpsertProfile(c.Context(), db.UpsertProfileParams{
+		Name: 				req.Name,
+		CurrentRoleTitle: 	pgtype.Text{String: req.CurrentRoleTitle, Valid: req.CurrentRoleTitle != ""},
+		Skills: 			req.Skills,	
+		ExperienceYears:    pgtype.Int4{Int32: req.ExperienceYears, Valid: true},
+		TargetRoles:        req.TargetRoles,
+		PreferredStack:     req.PreferredStack,
+		SalaryMin:          pgtype.Int4{Int32: req.SalaryMin, Valid: true},
+		SalaryMax:          pgtype.Int4{Int32: req.SalaryMax, Valid: true},
+		LocationPref:       pgtype.Text{String: req.LocationPref, Valid: req.LocationPref != ""},
+		RemoteOnly:         req.RemoteOnly,
+		Timezone:           req.Timezone,
+	})
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to save Profile",
+		})
+	}
+
+	return c.JSON(profile)
+}

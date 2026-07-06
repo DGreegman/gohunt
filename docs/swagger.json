@@ -78,6 +78,168 @@
                     }
                 }
             }
+        },
+        "/api/profile": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Get user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Create or update user profile",
+                "parameters": [
+                    {
+                        "description": "Profile data",
+                        "name": "profile",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_api.ProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_DGreegman_gohunt_internal_api.ProfileRequest": {
+            "type": "object",
+            "properties": {
+                "current_role_title": {
+                    "type": "string"
+                },
+                "experience_years": {
+                    "type": "integer"
+                },
+                "location_pref": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "preferred_stack": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "remote_only": {
+                    "type": "boolean"
+                },
+                "salary_max": {
+                    "type": "integer"
+                },
+                "salary_min": {
+                    "type": "integer"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "target_roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timezone": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_api.ProfileRequest": {
+            "type": "object",
+            "properties": {
+                "current_role_title": {
+                    "type": "string"
+                },
+                "experience_years": {
+                    "type": "integer"
+                },
+                "location_pref": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "preferred_stack": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "remote_only": {
+                    "type": "boolean"
+                },
+                "salary_max": {
+                    "type": "integer"
+                },
+                "salary_min": {
+                    "type": "integer"
+                },
+                "skills": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "target_roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "timezone": {
+                    "type": "string"
+                }
+            }
         }
     }
 }

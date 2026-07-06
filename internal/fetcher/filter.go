@@ -1,0 +1,54 @@
+package fetcher
+
+import (
+	"strings"
+	"time"
+)
+
+// FilterCriteria hold what we filter against (derived from the user the user profile)
+type FilterCriteria struct {
+	Keywords [] string  //target roles + skills, lowercased
+	MaxAge time.Duration // jobs older than this are dropped
+}
+
+// Relevant reports whether a job passes the cheap filter: recent enough AND mentions at least one keyword.
+
+func (fc FilterCriteria) Relevant (j Job) bool {
+	if !fc.recentEnough(j) {
+		return false
+	}
+
+	return fc.matchesKeyword(j)
+}
+
+func (fc FilterCriteria) recentEnough(j Job) bool {
+	if j.PostedAt.IsZero() {
+		return true // unknown date: don't drop it on stalenes alone
+	}
+	return time.Since(j.PostedAt) <= fc.MaxAge
+}
+
+func (fc FilterCriteria) matchesKeyword(j Job) bool {
+	haystack := strings.ToLower(j.Title + " " + j.Description)
+
+	for _, kw := range fc.Keywords {
+		if kw == ""{
+			continue
+		}
+		if strings.Contains(haystack, kw){
+			return  true
+		}
+	}
+	return false
+}
+
+// Filter returns only jobs that pass the criteria
+func Filter(jobs []Job, fc FilterCriteria) []Job {
+	out := make([]Job, 0, len(jobs))
+	for _, j := range jobs {
+		if fc.Relevant(j) {
+			out = append(out, j)
+		}
+	}
+	return out
+}
