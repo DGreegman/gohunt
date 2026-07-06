@@ -9,6 +9,7 @@ import (
 	"github.com/DGreegman/gohunt/internal/api"
 	"github.com/DGreegman/gohunt/internal/database"
 	"github.com/DGreegman/gohunt/internal/fetcher"
+	"github.com/DGreegman/gohunt/internal/scorer"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
@@ -39,6 +40,33 @@ func main() {
 	defer pool.Close()
 
 	log.Println("Connected to Database")
+
+	apiKey := os.Getenv("ANTHROPIC_API_KEY")
+	if apiKey == ""{
+		log.Fatal("ANTHROPIC_API_KEY is not set")
+	}
+	sc := scorer.NewScorer(apiKey)
+
+	testProfile := scorer.ProfileInput {
+		TargetRoles:     []string{"Backend Engineer", "Golang Developer"},
+		Skills:          []string{"Go", "PostgreSQL", "Docker", "Fiber"},
+		ExperienceYears: 3,
+		PreferredStack:  []string{"Go", "PostgreSQL"},
+		LocationPref:    "Remote",
+		RemoteOnly:      true,
+	}
+	result, err := sc.Score(ctx, "Senior Backend Engineer (Go)",
+		"We're hiring a Go engineer to build microservices with PostgreSQL and Docker. Remote-friendly.",
+		"Remote",
+		testProfile,)
+	if err != nil {
+		log.Fatalf("Score failed: %v", err)
+	}
+	log.Printf("SCORE: total=%d role=%d skill=%d seniority=%d stack=%d location=%d",
+    result.Total(), result.RoleMatch, result.SkillOverlap, result.SeniorityFit,
+    result.StackAlignment, result.LocationCompFit)
+	log.Printf("RATIONALE: %s", result.Rationale)
+
 
 	sources := []fetcher.JobSource{
 		fetcher.NewRemotiveSource(),
