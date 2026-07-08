@@ -27,6 +27,8 @@ type JobResponse struct {
 	PostedAt   *string `json:"posted_at"`
 	LinkStatus string  `json:"link_status"`
 	CreatedAt  string  `json:"created_at"`
+	FitScore  *int32 	`json:"fit_score"`
+	Rationale *string	`json:"rationale"`
 }
 
 // Handler holds dependencies shared across HTTP handlers.
@@ -61,8 +63,10 @@ func NewHandler(pool *pgxpool.Pool, source fetcher.JobSource, store *fetcher.Sto
 func (h *Handler) ListJobs(c *fiber.Ctx) error {
 	limit := parseIntDefault(c.Query("limit"), 20)
 	offset := parseIntDefault(c.Query("offset"), 0)
+	sortByScore := c.Query("sort") == "score"
 
 	jobs, err := h.queries.ListJobs(c.Context(), db.ListJobsParams{
+		SortByScore: sortByScore,
 		Limit:  int32(limit),
 		Offset: int32(offset),
 	})
@@ -130,6 +134,14 @@ func toJobResponse(j db.ListJobsRow) JobResponse {
 	if j.PostedAt.Valid {
 		s := j.PostedAt.Time.Format(time.RFC3339)
 		r.PostedAt = &s
+	}
+	if j.FitScore.Valid {
+		v := j.FitScore.Int32
+		r.FitScore = &v
+	}
+
+	if j.Rationale.Valid {
+		r.Rationale = &j.Rationale.String
 	}
 	return r
 }
@@ -227,7 +239,6 @@ func (h *Handler) UpsertProfile(c *fiber.Ctx) error {
 // @Success      200  {object}  map[string]interface{}
 // @Failure      500  {object}  map[string]interface{}
 // @Router       /api/score/trigger [post]
-
 func (h *Handler) TriggerScoring(c *fiber.Ctx) error {
 	ctx := c.Context()
 

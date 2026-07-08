@@ -1,37 +1,6 @@
 basePath: /
 definitions:
-  github_com_DGreegman_gohunt_internal_api.ProfileRequest:
-    properties:
-      current_role_title:
-        type: string
-      experience_years:
-        type: integer
-      location_pref:
-        type: string
-      name:
-        type: string
-      preferred_stack:
-        items:
-          type: string
-        type: array
-      remote_only:
-        type: boolean
-      salary_max:
-        type: integer
-      salary_min:
-        type: integer
-      skills:
-        items:
-          type: string
-        type: array
-      target_roles:
-        items:
-          type: string
-        type: array
-      timezone:
-        type: string
-    type: object
-  internal_api.ProfileRequest:
+  api.ProfileRequest:
     properties:
       current_role_title:
         type: string
@@ -143,7 +112,7 @@ paths:
         name: profile
         required: true
         schema:
-          $ref: '#/definitions/github_com_DGreegman_gohunt_internal_api.ProfileRequest'
+          $ref: '#/definitions/api.ProfileRequest'
       produces:
       - application/json
       responses:
@@ -160,4 +129,24 @@ paths:
       summary: Create or update user profile
       tags:
       - profile
+  /api/score/trigger:
+    post:
+      description: Loads the profile, filters unscored jobs, scores them via Claude,
+        stores results
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Score unscored jobs
+      tags:
+      - scoring
 swagger: "2.0"

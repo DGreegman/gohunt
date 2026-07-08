@@ -129,7 +129,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_DGreegman_gohunt_internal_api.ProfileRequest"
+                            "$ref": "#/definitions/api.ProfileRequest"
                         }
                     }
                 ],
@@ -150,57 +150,38 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/score/trigger": {
+            "post": {
+                "description": "Loads the profile, filters unscored jobs, scores them via Claude, stores results",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "scoring"
+                ],
+                "summary": "Score unscored jobs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "github_com_DGreegman_gohunt_internal_api.ProfileRequest": {
-            "type": "object",
-            "properties": {
-                "current_role_title": {
-                    "type": "string"
-                },
-                "experience_years": {
-                    "type": "integer"
-                },
-                "location_pref": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "preferred_stack": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "remote_only": {
-                    "type": "boolean"
-                },
-                "salary_max": {
-                    "type": "integer"
-                },
-                "salary_min": {
-                    "type": "integer"
-                },
-                "skills": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "target_roles": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "timezone": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_api.ProfileRequest": {
+        "api.ProfileRequest": {
             "type": "object",
             "properties": {
                 "current_role_title": {

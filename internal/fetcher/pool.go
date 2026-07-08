@@ -29,7 +29,7 @@ func (p *Pool) Name() string {
 func (p *Pool) FetchJobs(ctx context.Context) ([]Job, error) {
 	// Give the whole fetch a hard deadline. if it isn't done in time,
 	// the context cancels and every source's HTTP call aborts
-	ctx, cancel := context.WithTimeout(ctx, 1*time.Millisecond)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	work := make(chan JobSource) //queue: sources going IN to workers

@@ -98,15 +98,21 @@ func (q *Queries) CreateJobScore(ctx context.Context, arg CreateJobScoreParams) 
 }
 
 const listJobs = `-- name: ListJobs :many
-SELECT id, title, company, source, url, location, remote, posted_at, link_status, created_at
-FROM jobs
-ORDER BY created_at DESC
+SELECT j.id, j.title, j.company, j.source, j.url, j.location, j.remote,
+       j.posted_at, j.link_status, j.created_at,
+       s.fit_score, s.rationale
+FROM jobs j
+LEFT JOIN job_scores s ON s.job_id = j.id
+ORDER BY 
+    CASE WHEN $3::bool THEN s.fit_score END DESC NULLS LAST,
+    j.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type ListJobsParams struct {
-	Limit  int32
-	Offset int32
+	Limit       int32
+	Offset      int32
+	SortByScore bool
 }
 
 type ListJobsRow struct {
@@ -120,10 +126,12 @@ type ListJobsRow struct {
 	PostedAt   pgtype.Timestamptz
 	LinkStatus string
 	CreatedAt  pgtype.Timestamptz
+	FitScore   pgtype.Int4
+	Rationale  pgtype.Text
 }
 
 func (q *Queries) ListJobs(ctx context.Context, arg ListJobsParams) ([]ListJobsRow, error) {
-	rows, err := q.db.Query(ctx, listJobs, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listJobs, arg.Limit, arg.Offset, arg.SortByScore)
 	if err != nil {
 		return nil, err
 	}
@@ -142,6 +150,8 @@ func (q *Queries) ListJobs(ctx context.Context, arg ListJobsParams) ([]ListJobsR
 			&i.PostedAt,
 			&i.LinkStatus,
 			&i.CreatedAt,
+			&i.FitScore,
+			&i.Rationale,
 		); err != nil {
 			return nil, err
 		}
