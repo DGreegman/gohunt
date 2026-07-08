@@ -129,7 +129,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_api.ProfileRequest"
+                            "$ref": "#/definitions/github_com_DGreegman_gohunt_internal_api.ProfileRequest"
                         }
                     }
                 ],

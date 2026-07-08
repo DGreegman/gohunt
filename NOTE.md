@@ -18,3 +18,7 @@ why the fake-source pattern makes the pool testable (depends on the interface, i
 
 ## Node→Go talking points
 >> Go handlers need no async/await — Fiber runs each request in its own goroutine, so blocking DB/fetch calls only park that goroutine while the runtime runs other requests. Async behavior, no async syntax. Separately, the pool's explicit go goroutines add parallelism within a single request. Two levels of concurrency, one automatic (per request) and one you wrote (per fetch). In your own words, though 
+
+
+## Decoupling fetching of jobs and scoring
+>> I decoupled fetching from scoring because they have different cost and latency profiles; fetching is free and fast, scoring is paid and slow, so forcing them together would be poor design.

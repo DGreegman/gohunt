@@ -47,26 +47,6 @@ func main() {
 	}
 	sc := scorer.NewScorer(apiKey)
 
-	testProfile := scorer.ProfileInput {
-		TargetRoles:     []string{"Backend Engineer", "Golang Developer"},
-		Skills:          []string{"Go", "PostgreSQL", "Docker", "Fiber"},
-		ExperienceYears: 3,
-		PreferredStack:  []string{"Go", "PostgreSQL"},
-		LocationPref:    "Remote",
-		RemoteOnly:      true,
-	}
-	result, err := sc.Score(ctx, "Senior Backend Engineer (Go)",
-		"We're hiring a Go engineer to build microservices with PostgreSQL and Docker. Remote-friendly.",
-		"Remote",
-		testProfile,)
-	if err != nil {
-		log.Fatalf("Score failed: %v", err)
-	}
-	log.Printf("SCORE: total=%d role=%d skill=%d seniority=%d stack=%d location=%d",
-    result.Total(), result.RoleMatch, result.SkillOverlap, result.SeniorityFit,
-    result.StackAlignment, result.LocationCompFit)
-	log.Printf("RATIONALE: %s", result.Rationale)
-
 
 	sources := []fetcher.JobSource{
 		fetcher.NewRemotiveSource(),
@@ -76,7 +56,7 @@ func main() {
 	source := fetcher.NewPool(sources, 5)
 	
 	store := fetcher.NewStore(pool)
-	handler := api.NewHandler(pool, source, store)
+	handler := api.NewHandler(pool, source, store, sc)
 
 	app := fiber.New(fiber.Config{
 		AppName: "GoHunt v1.1",
@@ -90,6 +70,7 @@ func main() {
 	})
 	app.Get("/api/jobs", handler.ListJobs)
 	app.Post("/api/fetch/trigger", handler.TriggerFetch)
+	app.Post("/api/score/trigger", handler.TriggerScoring)
 	app.Get("/api/profile", handler.GetProfile)
 	app.Put("/api/profile", handler.UpsertProfile)
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)

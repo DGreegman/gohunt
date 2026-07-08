@@ -14,21 +14,21 @@ type FilterCriteria struct {
 // Relevant reports whether a job passes the cheap filter: recent enough AND mentions at least one keyword.
 
 func (fc FilterCriteria) Relevant (j Job) bool {
-	if !fc.recentEnough(j) {
+	if !fc.RecentEnough(j) {
 		return false
 	}
 
-	return fc.matchesKeyword(j)
+	return fc.MatchesKeyword(j)
 }
 
-func (fc FilterCriteria) recentEnough(j Job) bool {
+func (fc FilterCriteria) RecentEnough(j Job) bool {
 	if j.PostedAt.IsZero() {
 		return true // unknown date: don't drop it on stalenes alone
 	}
 	return time.Since(j.PostedAt) <= fc.MaxAge
 }
 
-func (fc FilterCriteria) matchesKeyword(j Job) bool {
+func (fc FilterCriteria) MatchesKeyword(j Job) bool {
 	haystack := strings.ToLower(j.Title + " " + j.Description)
 
 	for _, kw := range fc.Keywords {

@@ -65,6 +65,38 @@ func (q *Queries) CreateJob(ctx context.Context, arg CreateJobParams) (int64, er
 	return id, err
 }
 
+const createJobScore = `-- name: CreateJobScore :one
+INSERT INTO job_scores (
+    job_id, fit_score, dimension_scores, matched_skills, missing_skills, rationale
+) VALUES (
+    $1, $2, $3, $4, $5, $6
+)
+RETURNING id
+`
+
+type CreateJobScoreParams struct {
+	JobID           int64
+	FitScore        int32
+	DimensionScores []byte
+	MatchedSkills   []string
+	MissingSkills   []string
+	Rationale       pgtype.Text
+}
+
+func (q *Queries) CreateJobScore(ctx context.Context, arg CreateJobScoreParams) (int64, error) {
+	row := q.db.QueryRow(ctx, createJobScore,
+		arg.JobID,
+		arg.FitScore,
+		arg.DimensionScores,
+		arg.MatchedSkills,
+		arg.MissingSkills,
+		arg.Rationale,
+	)
+	var id int64
+	err := row.Scan(&id)
+	return id, err
+}
+
 const listJobs = `-- name: ListJobs :many
 SELECT id, title, company, source, url, location, remote, posted_at, link_status, created_at
 FROM jobs
@@ -110,6 +142,57 @@ func (q *Queries) ListJobs(ctx context.Context, arg ListJobsParams) ([]ListJobsR
 			&i.PostedAt,
 			&i.LinkStatus,
 			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUnscoredJobs = `-- name: ListUnscoredJobs :many
+SELECT j.id, j.title, j.company, j.source, j.url, j.description, j.description_hash, j.location, j.posted_at
+FROM jobs j
+LEFT JOIN job_scores s ON s.job_id = j.id
+WHERE s.id IS NULL
+ORDER BY j.created_at DESC
+LIMIT $1
+`
+
+type ListUnscoredJobsRow struct {
+	ID              int64
+	Title           string
+	Company         string
+	Source          string
+	Url             string
+	Description     string
+	DescriptionHash string
+	Location        string
+	PostedAt        pgtype.Timestamptz
+}
+
+func (q *Queries) ListUnscoredJobs(ctx context.Context, limit int32) ([]ListUnscoredJobsRow, error) {
+	rows, err := q.db.Query(ctx, listUnscoredJobs, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListUnscoredJobsRow
+	for rows.Next() {
+		var i ListUnscoredJobsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Company,
+			&i.Source,
+			&i.Url,
+			&i.Description,
+			&i.DescriptionHash,
+			&i.Location,
+			&i.PostedAt,
 		); err != nil {
 			return nil, err
 		}
