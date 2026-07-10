@@ -12,6 +12,7 @@ import (
 type GreenhouseSource struct {
 
 	slug string
+	baseURL string
 	client *http.Client
 }
 
@@ -19,6 +20,7 @@ type GreenhouseSource struct {
 func NewGreenhouseSource(slug string) *GreenhouseSource {
 	return &GreenhouseSource{
 		slug: slug,
+		baseURL: "https://boards-api.greenhouse.io/v1/boards",
 		client: &http.Client{Timeout: 15 * time.Second},
 	}
 }
@@ -41,7 +43,7 @@ type greenhouseJob struct {
 }
 
 func (s *GreenhouseSource) FetchJobs(ctx context.Context) ([]Job, error) {
-	url := fmt.Sprintf("https://boards-api.greenhouse.io/v1/boards/%s/jobs", s.slug)
+	url := fmt.Sprintf("%s/%s/jobs", s.baseURL, s.slug)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 
