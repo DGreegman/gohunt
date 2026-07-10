@@ -59,8 +59,13 @@ paths:
       - fetch
   /api/jobs:
     get:
-      description: Returns a paginated list of aggregated jobs
+      description: Returns a paginated list of jobs. Use sort=score to rank by AI
+        fit score.
       parameters:
+      - description: 'Sort order: ''score'' for fit ranking, otherwise by date'
+        in: query
+        name: sort
+        type: string
       - description: Max results (default 20)
         in: query
         name: limit

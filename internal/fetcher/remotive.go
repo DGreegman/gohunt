@@ -12,11 +12,11 @@ import (
 	"time"
 )
 
-const remotiveURL = "https://remotive.com/api/remote-jobs"
 
 // RemotiveSource fetches jobs from the remotive public API
 
 type RemotiveSource struct {
+	baseURL string
 	client *http.Client
 }
 
@@ -24,6 +24,7 @@ type RemotiveSource struct {
 
 func NewRemotiveSource() *RemotiveSource {
 	return &RemotiveSource{
+		baseURL: "https://remotive.com/api/remote-jobs",
 		client: &http.Client{Timeout: 15 * time.Second},
 	}
 }
@@ -47,7 +48,7 @@ type remotiveJob struct {
 
 func (s *RemotiveSource) FetchJobs(ctx context.Context) ([]Job, error) {
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, remotiveURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.baseURL, nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("Building Remotive request: %w", err)

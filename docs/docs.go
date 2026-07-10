@@ -45,7 +45,7 @@ const docTemplate = `{
         },
         "/api/jobs": {
             "get": {
-                "description": "Returns a paginated list of aggregated jobs",
+                "description": "Returns a paginated list of jobs. Use sort=score to rank by AI fit score.",
                 "produces": [
                     "application/json"
                 ],
@@ -54,6 +54,12 @@ const docTemplate = `{
                 ],
                 "summary": "List jobs",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sort order: 'score' for fit ranking, otherwise by date",
+                        "name": "sort",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "Max results (default 20)",

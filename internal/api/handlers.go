@@ -49,14 +49,14 @@ func NewHandler(pool *pgxpool.Pool, source fetcher.JobSource, store *fetcher.Sto
 	}
 }
 
-// ListJobs handles GET /api/jobs?limit=&offset=
 // ListJobs godoc
 // @Summary      List jobs
-// @Description  Returns a paginated list of aggregated jobs
+// @Description  Returns a paginated list of jobs. Use sort=score to rank by AI fit score.
 // @Tags         jobs
 // @Produce      json
-// @Param        limit   query     int  false  "Max results (default 20)"
-// @Param        offset  query     int  false  "Rows to skip (default 0)"
+// @Param        sort    query     string  false  "Sort order: 'score' for fit ranking, otherwise by date"
+// @Param        limit   query     int     false  "Max results (default 20)"
+// @Param        offset  query     int     false  "Rows to skip (default 0)"
 // @Success      200     {object}  map[string]interface{}
 // @Failure      500     {object}  map[string]interface{}
 // @Router       /api/jobs [get]
@@ -294,16 +294,11 @@ func (h *Handler) TriggerScoring(c *fiber.Ctx) error {
 		}
 
 		if !criteria.Relevant(job) {
-			log.Printf("SKIP %q: recent=%v keyword=%v postedAt=%v",
-				j.Title,
-				criteria.RecentEnough(job),
-				criteria.MatchesKeyword(job),
-				j.PostedAt.Time)
 			skipped++
 			continue
 		}
 
-		log.Printf("SCORING job %d: %q", j.ID, j.Title)
+		
 
 		result, err := h.scorer.Score(ctx, j.Title, j.Description, j.Location, profileInput)
 
@@ -312,7 +307,6 @@ func (h *Handler) TriggerScoring(c *fiber.Ctx) error {
 			continue
 		}
 
-		log.Printf("SCORE OK job %d: total=%d", j.ID, result.Total())
 
 		dimensions, _ := json.Marshal(map[string]int{
 			"role_match" : result.RoleMatch,

@@ -11,12 +11,13 @@ import (
 	"time"
 )
 
-const anthropicURL = "https://api.anthropic.com/v1/messages"
+
 
 // Scorer calls the Claude Api to score jobs against profile
 
 type Scorer struct {
 	apiKey string
+	baseURL string
 	client *http.Client
 }
 
@@ -24,6 +25,7 @@ type Scorer struct {
 func NewScorer(apiKey string) *Scorer {
 	return &Scorer{
 		apiKey: apiKey,
+		baseURL: "https://api.anthropic.com/v1/messages",
 		client: &http.Client{Timeout: 30 * time.Second},
 	}
 }
@@ -65,7 +67,7 @@ func (s *Scorer) callClaude(ctx context.Context, prompt string) (string, error) 
 		return "", fmt.Errorf("Marshaling Request: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, anthropicURL, bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.baseURL, bytes.NewReader(body))
 	if err != nil {
 		return "", fmt.Errorf("building request: %w", err)
 	}
