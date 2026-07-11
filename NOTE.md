@@ -27,3 +27,6 @@ why the fake-source pattern makes the pool testable (depends on the interface, i
 >> Standard Go layered architecture with dependency injection and interface-based abstractions at the boundaries. Handlers depend on interfaces, not concrete types, so the worker pool could replace a single source without touching the HTTP layer. DTOs at each layer keep the database schema from leaking into the API contract or the scoring logic
 
 >> Layered — HTTP handlers on top, domain packages for fetching and scoring in the middle, sqlc-generated queries for persistence. Dependencies are injected from main as constructor arguments, and handlers depend on interfaces rather than concrete types — which is how I swapped a single source for a concurrent pool without touching the HTTP layer.
+
+## -race flag for test
+>> -race catches data races — two goroutines touching the same memory unsafely — at runtime, which is the only reliable way to find these non-deterministic concurrency bugs. And running it in CI means your concurrent code is continuously guarded.

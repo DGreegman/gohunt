@@ -96,25 +96,17 @@ func (h *Handler) ListJobs(c *fiber.Ctx) error {
 // @Failure      500  {object}  map[string]interface{}
 // @Router       /api/fetch/trigger [post]
 func (h *Handler) TriggerFetch(c *fiber.Ctx) error {
-	jobs, err := h.source.FetchJobs(c.Context())
-
+	
+	fetched, inserted, err := fetcher.FetchAndStore(c.Context(), h.source, h.store)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Fetch Failed...",
-		})
-	}
-
-	inserted, err := h.store.SaveJobs(c.Context(), jobs)
-
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to Save Jobs",
+			"error": "fetch failed...",
 		})
 	}
 
 	return c.JSON(fiber.Map{
 		"source":   h.source.Name(),
-		"fetched":  len(jobs),
+		"fetched":  fetched,
 		"inserted": inserted,
 	})
 }

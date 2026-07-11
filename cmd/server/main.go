@@ -9,6 +9,7 @@ import (
 	"github.com/DGreegman/gohunt/internal/api"
 	"github.com/DGreegman/gohunt/internal/database"
 	"github.com/DGreegman/gohunt/internal/fetcher"
+	"github.com/DGreegman/gohunt/internal/schedular"
 	"github.com/DGreegman/gohunt/internal/scorer"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -74,5 +75,12 @@ func main() {
 	app.Get("/api/profile", handler.GetProfile)
 	app.Put("/api/profile", handler.UpsertProfile)
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
+
+	// Start the background schedular (fetches every 6 hours)
+	_, err = schedular.Start(source, store, "0 */6 * * *")
+	if err != nil {
+		log.Fatalf("Failed to start schedular: %v", err)
+	}
+	log.Println("Schedular Started...")
 	log.Fatal(app.Listen(":8080"))
 }
