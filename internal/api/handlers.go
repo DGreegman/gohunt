@@ -446,7 +446,7 @@ func (h *Handler) ListApplications(c *fiber.Ctx) error {
 	}
 	return c.JSON(fiber.Map{
 		"count": len(apps),
-		"application": resp,
+		"applications": resp,
 	})
 
 }
