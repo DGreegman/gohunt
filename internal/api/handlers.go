@@ -351,6 +351,22 @@ func buildKeywords(profile db.UserProfile) []string {
 	return kws
 }
 
+// ApplicationResponse is the API shape for an application (with job details).
+type ApplicationResponse struct {
+	ID             int64   `json:"id"`
+	JobID          int64   `json:"job_id"`
+	Status         string  `json:"status"`
+	AppliedAt      *string `json:"applied_at"`
+	Notes          *string `json:"notes"`
+	NextAction     *string `json:"next_action"`
+	NextActionDate *string `json:"next_action_date"`
+	CreatedAt      string  `json:"created_at"`
+
+	// Joined job details
+	JobTitle   string `json:"job_title,omitempty"`
+	JobCompany string `json:"job_company,omitempty"`
+	JobURL     string `json:"job_url,omitempty"`
+}
 
 type CreateApplicationRequest struct {
 	JobID int64		`json:"job_id"`
@@ -402,15 +418,19 @@ func (h *Handler) CreateApplication(c *fiber.Ctx) error {
 func (h *Handler) ListApplications(c *fiber.Ctx) error {
 	apps, err := h.queries.ListApplications(c.Context())
 	if err != nil {
-		log.Fatalf("failed to list applications %w", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error" : "failed to list applications",
 		})
 	}
 
+	resp := make([]ApplicationResponse, 0, len(apps))
+
+	for _, a := range apps {
+		resp = append(resp, toApllicationResponse(a))
+	}
 	return c.JSON(fiber.Map{
 		"count": len(apps),
-		"application": apps,
+		"application": resp,
 	})
 
 }
@@ -498,4 +518,33 @@ func toPgText(s *string) pgtype.Text{
 	}
 
 	return pgtype.Text{String: *s, Valid: true}
+}
+
+func toApllicationResponse(a db.ListApplicationsRow) ApplicationResponse {
+	r := ApplicationResponse {
+		ID: 			a.ID,
+		JobID: 			a.JobID,
+		Status:  		a.Status,
+		CreatedAt: 		a.CreatedAt.Time.Format(time.RFC3339),
+		JobTitle: 		a.Title,
+		JobCompany: 	a.Company,
+		JobURL: 		a.Url,
+	}
+
+	if a.AppliedAt.Valid {
+		s := a.AppliedAt.Time.Format(time.RFC3339)
+		r.AppliedAt = &s
+	}
+	if a.Notes.Valid {
+		r.Notes = &a.Notes.String
+		
+	}
+	if a.NextAction.Valid {
+		r.NextAction = &a.NextAction.String
+	}
+	if a.NextActionDate.Valid {
+		s := a.NextActionDate.Time.Format("2006-01-02")
+		r.NextActionDate = &s
+	}
+	return r
 }
