@@ -15,6 +15,65 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/applications": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "List all tracked applications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Create an application from a job",
+                "parameters": [
+                    {
+                        "description": "Application data",
+                        "name": "application",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.CreateApplicationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/api/fetch/trigger": {
             "post": {
                 "description": "Fetches jobs from the configured source and stores new ones",
@@ -187,6 +246,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api.CreateApplicationRequest": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                }
+            }
+        },
         "api.ProfileRequest": {
             "type": "object",
             "properties": {

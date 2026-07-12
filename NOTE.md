@@ -30,3 +30,6 @@ why the fake-source pattern makes the pool testable (depends on the interface, i
 
 ## -race flag for test
 >> -race catches data races — two goroutines touching the same memory unsafely — at runtime, which is the only reliable way to find these non-deterministic concurrency bugs. And running it in CI means your concurrent code is continuously guarded.
+
+## why the scheduler needed its own goroutine? 
+>> app.Listen blocks forever, so anything after it never runs; and the scheduler needs to run concurrently with the server, not instead of it — hence its own goroutine.

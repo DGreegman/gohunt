@@ -348,3 +348,67 @@ func buildKeywords(profile db.UserProfile) []string {
 
 	return kws
 }
+
+
+type CreateApplicationRequest struct {
+	JobID int64		`json:"job_id"`
+	Notes string	`json:"notes"`
+}
+
+// CreateApplication godoc
+// @Summary      Create an application from a job
+// @Tags         applications
+// @Accept       json
+// @Produce      json
+// @Param        application  body      CreateApplicationRequest  true  "Application data"
+// @Success      201          {object}  map[string]interface{}
+// @Failure      400          {object}  map[string]interface{}
+// @Router       /api/applications [post]
+func (h *Handler) CreateApplication(c *fiber.Ctx) error {
+	var req CreateApplicationRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error" : "invalid request body",
+		})
+	}
+	if req.JobID == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error" : "job_id is required...",
+		})
+	}
+
+	app, err := h.queries.CreateApplication(c.Context(), db.CreateApplicationParams{
+		JobID: req.JobID,
+		Notes: pgtype.Text{String:req.Notes, Valid: req.Notes != ""},
+	})
+
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error" : "failed to create application",
+		})
+	}
+	return c.Status(fiber.StatusCreated).JSON(app)
+}
+
+
+// ListApplications godoc
+// @Summary      List all tracked applications
+// @Tags         applications
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Router       /api/applications [get]
+func (h *Handler) ListApplications(c *fiber.Ctx) error {
+	apps, err := h.queries.ListApplications(c.Context())
+	if err != nil {
+		log.Fatalf("failed to list applications %w", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error" : "failed to list applications",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"count": len(apps),
+		"application": apps,
+	})
+
+}

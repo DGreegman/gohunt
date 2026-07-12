@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  api.CreateApplicationRequest:
+    properties:
+      job_id:
+        type: integer
+      notes:
+        type: string
+    type: object
   api.ProfileRequest:
     properties:
       current_role_title:
@@ -38,6 +45,45 @@ info:
   title: GoHunt API
   version: "1.1"
 paths:
+  /api/applications:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List all tracked applications
+      tags:
+      - applications
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application data
+        in: body
+        name: application
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create an application from a job
+      tags:
+      - applications
   /api/fetch/trigger:
     post:
       description: Fetches jobs from the configured source and stores new ones
