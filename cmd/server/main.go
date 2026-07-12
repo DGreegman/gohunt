@@ -9,6 +9,7 @@ import (
 	"github.com/DGreegman/gohunt/internal/api"
 	"github.com/DGreegman/gohunt/internal/database"
 	"github.com/DGreegman/gohunt/internal/fetcher"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/DGreegman/gohunt/internal/scheduler"
 	"github.com/DGreegman/gohunt/internal/scorer"
 	"github.com/gofiber/fiber/v2"
@@ -63,6 +64,11 @@ func main() {
 		AppName: "GoHunt v1.1",
 	})
 
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:3000",
+		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowMethods: "GET, POST, PUT, PATCH, DELETE",
+	}))
 	
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{

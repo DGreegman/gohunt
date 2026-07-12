@@ -14,7 +14,7 @@ SELECT count(*) FROM jobs;
 -- name: ListJobs :many
 SELECT j.id, j.title, j.company, j.source, j.url, j.location, j.remote,
        j.posted_at, j.link_status, j.created_at,
-       s.fit_score, s.rationale
+       s.fit_score, s.rationale, s.dimension_scores
 FROM jobs j
 LEFT JOIN job_scores s ON s.job_id = j.id
 ORDER BY 

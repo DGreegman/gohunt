@@ -100,7 +100,7 @@ func (q *Queries) CreateJobScore(ctx context.Context, arg CreateJobScoreParams) 
 const listJobs = `-- name: ListJobs :many
 SELECT j.id, j.title, j.company, j.source, j.url, j.location, j.remote,
        j.posted_at, j.link_status, j.created_at,
-       s.fit_score, s.rationale
+       s.fit_score, s.rationale, s.dimension_scores
 FROM jobs j
 LEFT JOIN job_scores s ON s.job_id = j.id
 ORDER BY 
@@ -116,18 +116,19 @@ type ListJobsParams struct {
 }
 
 type ListJobsRow struct {
-	ID         int64
-	Title      string
-	Company    string
-	Source     string
-	Url        string
-	Location   string
-	Remote     bool
-	PostedAt   pgtype.Timestamptz
-	LinkStatus string
-	CreatedAt  pgtype.Timestamptz
-	FitScore   pgtype.Int4
-	Rationale  pgtype.Text
+	ID              int64
+	Title           string
+	Company         string
+	Source          string
+	Url             string
+	Location        string
+	Remote          bool
+	PostedAt        pgtype.Timestamptz
+	LinkStatus      string
+	CreatedAt       pgtype.Timestamptz
+	FitScore        pgtype.Int4
+	Rationale       pgtype.Text
+	DimensionScores []byte
 }
 
 func (q *Queries) ListJobs(ctx context.Context, arg ListJobsParams) ([]ListJobsRow, error) {
@@ -152,6 +153,7 @@ func (q *Queries) ListJobs(ctx context.Context, arg ListJobsParams) ([]ListJobsR
 			&i.CreatedAt,
 			&i.FitScore,
 			&i.Rationale,
+			&i.DimensionScores,
 		); err != nil {
 			return nil, err
 		}

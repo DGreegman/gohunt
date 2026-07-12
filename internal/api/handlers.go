@@ -31,6 +31,7 @@ type JobResponse struct {
 	CreatedAt  string  `json:"created_at"`
 	FitScore  *int32 	`json:"fit_score"`
 	Rationale *string	`json:"rationale"`
+	Dimensions map[string]int `json:"dimensions,omitempty"`
 }
 
 // Handler holds dependencies shared across HTTP handlers.
@@ -136,6 +137,12 @@ func toJobResponse(j db.ListJobsRow) JobResponse {
 
 	if j.Rationale.Valid {
 		r.Rationale = &j.Rationale.String
+	}
+	if len(j.DimensionScores) > 0 {
+		var dims map[string]int
+		if err := json.Unmarshal(j.DimensionScores, &dims); err == nil {
+			r.Dimensions = dims
+		}
 	}
 	return r
 }

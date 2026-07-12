@@ -9,3 +9,9 @@ gohunt
 # editor
 .vscode/
 .idea/
+
+# frontend
+web/node_modules/
+web/.next/
+web/out/
+web/.env.local
