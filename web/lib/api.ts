@@ -22,3 +22,19 @@ export async function fetchJobs(params?: {
 
   return res.json();
 }
+
+
+export async function trackJob(jobId: number, notes?: string): Promise<void> {
+  const res = await fetch(`${API_URL}/api/applications`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id: jobId, notes: notes ?? "" }),
+  });
+
+  if (res.status === 409) {
+    throw new Error("ALREADY_TRACKED");
+  }
+  if (!res.ok) {
+    throw new Error(`Failed to track job: ${res.status}`);
+  }
+}

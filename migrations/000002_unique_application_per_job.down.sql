@@ -1,0 +1,1 @@
+ALTER TABLE applications DROP CONSTRAINT IF EXISTS applications_job_id_unique;

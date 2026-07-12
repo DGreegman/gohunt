@@ -44,6 +44,53 @@ function DimensionBar({ label, value }: { label: string; value: number }) {
   );
 }
 
+import { trackJob } from "@/lib/api";
+
+type TrackState = "idle" | "saving" | "tracked" | "error";
+
+function TrackButton({ jobId }: { jobId: number }) {
+  const [state, setState] = useState<TrackState>("idle");
+
+  async function handleClick() {
+    if (state === "saving" || state === "tracked") return;
+
+    setState("saving");
+    try {
+      await trackJob(jobId);
+      setState("tracked");
+    } catch (err) {
+      if (err instanceof Error && err.message === "ALREADY_TRACKED") {
+        setState("tracked");
+      } else {
+        setState("error");
+      }
+    }
+  }
+
+  const label = {
+    idle: "Track this job",
+    saving: "Saving…",
+    tracked: "Tracked ✓",
+    error: "Failed — try again",
+  }[state];
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={state === "saving" || state === "tracked"}
+      className={`-m-2 p-2 text-xs transition-colors ${
+        state === "tracked"
+          ? "text-amber-400/70 cursor-default"
+          : state === "error"
+          ? "text-red-400 hover:text-red-300"
+          : "text-slate-500 hover:text-amber-400"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 export function JobCard({ job }: { job: Job }) {
   const [expanded, setExpanded] = useState(false);
   const hasDimensions = job.dimensions && Object.keys(job.dimensions).length > 0;
@@ -108,8 +155,11 @@ export function JobCard({ job }: { job: Job }) {
             </div>
           )}
 
-          <div className="mt-3 font-mono text-xs uppercase tracking-wide text-slate-600">
-            {job.source}
+          <div className="mt-4 flex items-center justify-between">
+            <span className="font-mono text-xs uppercase tracking-wide text-slate-600">
+              {job.source}
+            </span>
+            <TrackButton jobId={job.id} />
           </div>
         </div>
       </div>

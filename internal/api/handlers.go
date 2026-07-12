@@ -13,6 +13,7 @@ import (
 	"github.com/DGreegman/gohunt/internal/scorer"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -408,6 +409,14 @@ func (h *Handler) CreateApplication(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
+		log.Printf("DEBUG create application error: %v (type %T)", err, err)
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"error" : "This is already being tracked...",
+			})
+
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error" : "failed to create application",
 		})
