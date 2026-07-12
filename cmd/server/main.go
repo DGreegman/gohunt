@@ -77,6 +77,7 @@ func main() {
 	app.Get("/swagger/*", fiberSwagger.WrapHandler)
 	app.Post("/api/applications", handler.CreateApplication)
 	app.Get("/api/applications", handler.ListApplications)
+	app.Patch("/api/applications/:id", handler.UpdateApplication)
 
 	// Start the background schedular (fetches every 6 hours)
 	_, err = scheduler.Start(source, store, "0 */6 * * *")

@@ -127,3 +127,44 @@ func (q *Queries) ListApplications(ctx context.Context) ([]ListApplicationsRow, 
 	}
 	return items, nil
 }
+
+const updateApplication = `-- name: UpdateApplication :one
+UPDATE applications
+SET status = COALESCE($2, status),
+        notes = COALESCE($3, notes),
+        next_action = COALESCE($4, next_action),
+        applied_at = CASE
+                WHEN $2::text = 'applied' AND applied_at IS NULL THEN now()
+                ELSE applied_at
+        END
+WHERE id = $1
+RETURNING id, job_id, status, applied_at, notes, next_action, next_action_date, created_at
+`
+
+type UpdateApplicationParams struct {
+	ID         int64
+	Status     pgtype.Text
+	Notes      pgtype.Text
+	NextAction pgtype.Text
+}
+
+func (q *Queries) UpdateApplication(ctx context.Context, arg UpdateApplicationParams) (Application, error) {
+	row := q.db.QueryRow(ctx, updateApplication,
+		arg.ID,
+		arg.Status,
+		arg.Notes,
+		arg.NextAction,
+	)
+	var i Application
+	err := row.Scan(
+		&i.ID,
+		&i.JobID,
+		&i.Status,
+		&i.AppliedAt,
+		&i.Notes,
+		&i.NextAction,
+		&i.NextActionDate,
+		&i.CreatedAt,
+	)
+	return i, err
+}

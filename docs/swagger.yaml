@@ -38,6 +38,15 @@ definitions:
       timezone:
         type: string
     type: object
+  api.UpdateApplicationRequest:
+    properties:
+      next_action:
+        type: string
+      notes:
+        type: string
+      status:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -82,6 +91,43 @@ paths:
             additionalProperties: true
             type: object
       summary: Create an application from a job
+      tags:
+      - applications
+  /api/applications/{id}:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Fields to update
+        in: body
+        name: application
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdateApplicationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update an application's status or notes
       tags:
       - applications
   /api/fetch/trigger:

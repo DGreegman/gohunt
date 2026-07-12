@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/DGreegman/gohunt/internal/fetcher"
 	"github.com/DGreegman/gohunt/internal/scorer"
 	"github.com/gofiber/fiber/v2"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -411,4 +413,89 @@ func (h *Handler) ListApplications(c *fiber.Ctx) error {
 		"application": apps,
 	})
 
+}
+
+// UpdateApplicationRequest is the body for updating an application.
+// Fields are pointers so we can tell "not provided" from "set to empty".
+type UpdateApplicationRequest struct {
+	Status     *string `json:"status"`
+	Notes      *string `json:"notes"`
+	NextAction *string `json:"next_action"`
+}
+
+// validStatuses are the allowed pipeline stages.
+var validStatuses = map[string]bool{
+	"new":       true,
+	"applied":   true,
+	"interview": true,
+	"offer":     true,
+	"rejected":  true,
+}
+
+
+// UpdateApplication godoc
+// @Summary      Update an application's status or notes
+// @Tags         applications
+// @Accept       json
+// @Produce      json
+// @Param        id           path      int                       true  "Application ID"
+// @Param        application  body      UpdateApplicationRequest  true  "Fields to update"
+// @Success      200          {object}  map[string]interface{}
+// @Failure      400          {object}  map[string]interface{}
+// @Failure      404          {object}  map[string]interface{}
+// @Router       /api/applications/{id} [patch]
+func (h *Handler) UpdateApplication(c *fiber.Ctx) error {
+	id, err := strconv.ParseInt(c.Params("id"), 10, 64)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid Application ID",
+		})
+	}
+
+	var req UpdateApplicationRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error" : "Invalid Request Body",
+		})
+	}
+
+	// Validate status if one was provided.
+	if req.Status != nil && !validStatuses[*req.Status] {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error" : "Invalid Status - must be one of: new, applied, interview, offer, rejected",
+		})
+	}
+
+	params := db.UpdateApplicationParams{
+		ID: 		id,
+		Status : 	toPgText(req.Status),
+		Notes: 		toPgText(req.Notes),
+		NextAction: toPgText(req.NextAction),
+	}
+
+
+	app, err := h.queries.UpdateApplication(c.Context(), params)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows){
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "Application not Found...",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error" : "Failed to Update application",
+		})
+	}
+
+	return c.JSON(app)
+}
+
+// toPgText converts an optional string into a nullable pgtype.Text.
+// nil pointer → NULL (field not provided, COALESCE keeps the old value).
+func toPgText(s *string) pgtype.Text{
+	if s == nil{
+		return pgtype.Text{Valid: false}
+	}
+
+	return pgtype.Text{String: *s, Valid: true}
 }
