@@ -36,14 +36,16 @@ type greenhouseResponse struct {
 type greenhouseJob struct {
 	Title	   	string `json:"title"`
 	AbsoluteURL string `json:"absolute_url"`
-	UpdatedAt  string `json:"updated_at"`
+	UpdatedAt  	string `json:"updated_at"`
+	Content 	string `json:"content"`
+	CompanyName	string `json:"company_name"`
 	Location   struct {
 		Name string `json:"name"`
 	} `json:"location"`
 }
 
 func (s *GreenhouseSource) FetchJobs(ctx context.Context) ([]Job, error) {
-	url := fmt.Sprintf("%s/%s/jobs", s.baseURL, s.slug)
+	url := fmt.Sprintf("%s/%s/jobs?content=true", s.baseURL, s.slug)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 
@@ -71,12 +73,18 @@ func (s *GreenhouseSource) FetchJobs(ctx context.Context) ([]Job, error) {
 	jobs := make([]Job, 0, len(payload.Jobs))
 	for _, gj := range payload.Jobs {
 		postedAt, _ := time.Parse(time.RFC3339, gj.UpdatedAt)
+		company := gj.CompanyName 
+		if company == "" {
+			company = s.slug
+		}
 		jobs = append(jobs, Job{
 			Title: gj.Title,
-			Company: s.slug,
+			Company: company,
 			Source: s.Name(),
 			URL: gj.AbsoluteURL,
+			Description: gj.Content,
 			Location: gj.Location.Name,
+			Remote: false,
 			PostedAt: postedAt,
 			Hash: hashJob(gj.Title, s.slug, gj.Location.Name),
 		})

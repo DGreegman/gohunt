@@ -276,7 +276,7 @@ func (h *Handler) TriggerScoring(c *fiber.Ctx) error {
 		RemoteOnly:      profile.RemoteOnly,
 	}
 
-	const maxToScore = 20
+	const maxToScore = 100
 	scored := 0
 	skipped := 0
 

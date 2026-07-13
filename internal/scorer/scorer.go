@@ -122,8 +122,9 @@ CANDIDATE PROFILE:
 - Target roles: %s
 - Skills: %s
 - Experience: %d years
-- Preferred stack: %s
+-- Preferred stack: %s
 - Location preference: %s (remote only: %t)
+- ELIGIBILITY: The candidate is based in Nigeria (WAT, UTC+1). Roles restricted to US, Canada, or LATAM are NOT viable — score location_comp_fit near zero for these. Roles open to EMEA, Africa, worldwide, or "anywhere" are viable.
 
 JOB:
 - Title: %s
@@ -135,7 +136,7 @@ Score the match on FIVE dimensions, each 0-20:
 2. skill_overlap: how many of the candidate's skills the job requires
 3. seniority_fit: whether the seniority level matches the candidate's experience
 4. stack_alignment: how well the tech stack matches the candidate's preferred stack
-5. location_comp_fit: whether location/remote arrangement suits the candidate
+5. location_comp_fit: whether the candidate is ELIGIBLE for this role's location. Score 0-3 if the role is restricted to a region the candidate cannot work from (US, Canada, LATAM). Score 15-20 only if the role is open to Africa, EMEA, or worldwide.
 
 Respond with ONLY a valid JSON object, no other text, in exactly this format:
 {"role_match": 0, "skill_overlap": 0, "seniority_fit": 0, "stack_alignment": 0, "location_comp_fit": 0, "rationale": "one sentence explaining the score"}`,

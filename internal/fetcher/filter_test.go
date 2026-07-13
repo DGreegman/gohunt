@@ -45,9 +45,9 @@ func TestFilterRelevant(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "keyword in description only",
-			job:  Job{Title: "Software Engineer", Description: "PostgreSQL expert needed", PostedAt: now},
-			want: true,
+			name: "keyword in description but not title is rejected",
+			job:  Job{Title: "Account Executive", Description: "work with our Go backend team", PostedAt: now},
+			want: false,
 		},
 	}
 

@@ -51,8 +51,12 @@ func main() {
 
 
 	sources := []fetcher.JobSource{
-		fetcher.NewRemotiveSource(),
 		fetcher.NewGreenhouseSource("gitlab"),
+		fetcher.NewGreenhouseSource("remotecom"),
+		fetcher.NewGreenhouseSource("ionq"),
+		fetcher.NewGreenhouseSource("novacredit"),
+		fetcher.NewGreenhouseSource("piramidalinc"),
+		fetcher.NewGreenhouseSource("beautifulai"),
 	}
 
 	source := fetcher.NewPool(sources, 5)

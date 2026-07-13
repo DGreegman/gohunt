@@ -29,7 +29,7 @@ func (fc FilterCriteria) RecentEnough(j Job) bool {
 }
 
 func (fc FilterCriteria) MatchesKeyword(j Job) bool {
-	haystack := strings.ToLower(j.Title + " " + j.Description)
+	haystack := strings.ToLower(j.Title)
 
 	for _, kw := range fc.Keywords {
 		if kw == ""{

@@ -6,7 +6,7 @@ export default async function Pipeline() {
 
   return (
     <main className="min-h-screen bg-[#0F1419] text-slate-100">
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-6xl px-6 py-12">
         <header className="mb-12">
           <h1 className="font-mono text-sm uppercase tracking-widest text-amber-400">
             Pipeline
